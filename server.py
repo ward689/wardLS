@@ -20,9 +20,14 @@ API_ID = int(os.getenv("API_ID", 0))
 API_HASH = os.getenv("API_HASH", "")
 SESSION_NAME = os.getenv("SESSION_NAME", "my_session")
 MY_USER_ID = int(os.getenv("MY_USER_ID", 0))
+PHONE_NUMBER = os.getenv("PHONE_NUMBER", "")  # <--- НОВАЯ ПЕРЕМЕННАЯ
 
 if not API_ID or not API_HASH:
     logger.error("❌ API_ID или API_HASH не заданы в переменных окружения!")
+    exit(1)
+
+if not PHONE_NUMBER:
+    logger.error("❌ PHONE_NUMBER не задан в переменных окружения!")
     exit(1)
 
 # ==================== КЛИЕНТ PYROGRAM ====================
@@ -30,7 +35,8 @@ app_bot = Client(
     name=SESSION_NAME,
     api_id=API_ID,
     api_hash=API_HASH,
-    workdir=SESSION_DIR
+    workdir=SESSION_DIR,
+    phone_number=PHONE_NUMBER  # <--- ПЕРЕДАЁМ НОМЕР
 )
 
 # ==================== FLASK ДЛЯ KEEP-ALIVE ====================
@@ -60,7 +66,7 @@ async def start_bot():
             await app_bot.start()
             logger.info("✅ Бот успешно запущен и готов к работе!")
             
-            # Отправляем приветствие в личку (если есть MY_USER_ID)
+            # Отправляем приветствие в личку
             if MY_USER_ID:
                 try:
                     await app_bot.send_message(MY_USER_ID, "🚀 Бот запущен на Render!")
