@@ -7,23 +7,19 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 
 # ==================== КОНФИГ ====================
-API_ID = int(os.getenv("API_ID", 34954014))
-API_HASH = os.getenv("API_HASH", "303e402252545f252f46402aabf154cc")
-MY_USER_ID = int(os.getenv("MY_USER_ID", 7823802800))
-
-# СТРОКА СЕССИИ (ВСТАВЬ СВОЮ)
-SESSION_STRING = "BAIVWl4Axm2K9id56nuMBu9wpovDnl_dW8TrmE6auNHoC2ONl2pEDtyht21nX0qL-4L1fC7dEVOhoeSpjgM1ZrB2dR6Ewi9vCNLLvRo_Rj07gEpVGupQVB7ttX_9GltXa3WxlWypU-xz-RvEQ_iWJjr8AXzpRRTyusEDRSb_8zhAwgCAbcluJ5LcSwJVIm_2WQZu4b5QIkR_zeAhGWdyFKlJn0fdzwPdascBuRXUtaPuaPm4Ot_WSWk-OZfvqhL_vexNBJfr6xef6G03tx2vijwHv_2EdThc0F36Ju8P8kJzYllWtlbH4MKu3Ftm36cYJ2ttAXF-Q-uCo_fho62iwMGEYpUm8gAAAAHSVcGwAA"
+API_ID = 34954014
+API_HASH = "303e402252545f252f46402aabf154cc"
+MY_USER_ID = 7823802800
 
 # ==================== НАСТРОЙКА ====================
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ==================== КЛИЕНТ (ЧЕРЕЗ СТРОКУ СЕССИИ) ====================
+# ==================== КЛИЕНТ (БЕЗ СТРОКИ СЕССИИ) ====================
 app = Client(
-    name="session",
+    "my_session",
     api_id=API_ID,
-    api_hash=API_HASH,
-    session_string=SESSION_STRING  # <--- ГЛАВНОЕ
+    api_hash=API_HASH
 )
 
 # ==================== КОМАНДЫ ====================
