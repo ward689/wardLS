@@ -6,7 +6,7 @@ from flask import Flask, jsonify
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-# ==================== ЗАБИРАЕМ ИЗ ПЕРЕМЕННЫХ НА RENDER ====================
+# ==================== КОНФИГ ====================
 API_ID = int(os.getenv("API_ID", 34954014))
 API_HASH = os.getenv("API_HASH", "303e402252545f252f46402aabf154cc")
 MY_USER_ID = int(os.getenv("MY_USER_ID", 7823802800))
@@ -16,18 +16,25 @@ SESSION_NAME = os.getenv("SESSION_NAME", "my_session")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ==================== КЛИЕНТ (СЕССИЯ СОХРАНЯЕТСЯ) ====================
+# ==================== КЛИЕНТ ====================
 app = Client(
     name=SESSION_NAME,
     api_id=API_ID,
     api_hash=API_HASH,
-    workdir="./session"  # папка для сессии
+    workdir="./"  # <--- ФАЙЛ СЕССИИ БУДЕТ В КОРНЕ
 )
 
 # ==================== КОМАНДЫ ====================
 @app.on_message(filters.command("start") & filters.user(MY_USER_ID))
 async def start_cmd(client, message: Message):
     await message.reply_text("✅ Бот работает!")
+
+@app.on_message(filters.command("ping") & filters.user(MY_USER_ID))
+async def ping_cmd(client, message: Message):
+    start = time.time()
+    msg = await message.reply_text("🏓...")
+    end = time.time()
+    await msg.edit_text(f"🏓 {round((end - start) * 1000)} мс")
 
 # ==================== FLASK ====================
 flask_app = Flask(__name__)
