@@ -1,13 +1,25 @@
-# server.py
+import os
+import asyncio
 import threading
 import time
 from flask import Flask, jsonify
 from pyrogram import Client
 
-# Твой основной код бота
-app_bot = Client(...)  # твой клиент
+# ========== ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ ==========
+API_ID = int(os.getenv("API_ID", 0))
+API_HASH = os.getenv("API_HASH", "")
+SESSION_NAME = os.getenv("SESSION_NAME", "my_session")
+MY_USER_ID = int(os.getenv("MY_USER_ID", 0))
 
-# Flask для Keep-Alive
+# ========== КЛИЕНТ ==========
+app_bot = Client(
+    session_name=SESSION_NAME,
+    api_id=API_ID,
+    api_hash=API_HASH,
+    workdir="./session"
+)
+
+# ========== FLASK ==========
 app_web = Flask(__name__)
 
 @app_web.route('/')
@@ -18,17 +30,23 @@ def home():
 def ping():
     return "pong"
 
-def run_bot():
-    # тут твой app_bot.run() или запуск через asyncio
-    app_bot.run()
-
 def run_flask():
-    app_web.run(host='0.0.0.0', port=8080)
+    app_web.run(host='0.0.0.0', port=int(os.getenv("PORT", 8080)))
 
-if __name__ == '__main__':
-    # Запускаем Flask в фоновом потоке
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.start()
+# ========== ЗАПУСК БОТА ==========
+async def start_bot():
+    async with app_bot:
+        await app_bot.start()
+        print("✅ Бот запущен и готов к работе!")
+        await asyncio.Event().wait()
+
+def run_bot():
+    asyncio.run(start_bot())
+
+if __name__ == "__main__":
+    # Запускаем Flask в отдельном потоке
+    t = threading.Thread(target=run_flask, daemon=True)
+    t.start()
     
-    # Запускаем бота (основной поток)
+    # Запускаем бота
     run_bot()
