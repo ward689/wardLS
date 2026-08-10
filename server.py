@@ -13,7 +13,7 @@ MY_USER_ID = int(os.getenv("MY_USER_ID", 0))
 
 # ========== КЛИЕНТ ==========
 app_bot = Client(
-    session_name=SESSION_NAME,
+    name=SESSION_NAME,                     # <--- ИСПРАВЛЕНО
     api_id=API_ID,
     api_hash=API_HASH,
     workdir="./session"
