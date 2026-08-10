@@ -6,30 +6,33 @@ import logging
 from flask import Flask, jsonify
 from pyrogram import Client
 
+# ==================== НАСТРОЙКА ====================
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-SESSION_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "session")
-os.makedirs(SESSION_DIR, exist_ok=True)
-
+# ==================== ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ ====================
 API_ID = int(os.getenv("API_ID", 0))
 API_HASH = os.getenv("API_HASH", "")
-STRING_SESSION = os.getenv("STRING_SESSION", "")  # <--- ГЛАВНОЕ
+SESSION_STRING = os.getenv("SESSION_STRING", "")  # <--- ГЛАВНОЕ
 MY_USER_ID = int(os.getenv("MY_USER_ID", 0))
 
-if not STRING_SESSION:
-    logger.error("❌ STRING_SESSION не задан!")
+if not API_ID or not API_HASH:
+    logger.error("❌ API_ID или API_HASH не заданы!")
     exit(1)
 
-# ========== КЛИЕНТ ЧЕРЕЗ СТРОКУ СЕССИИ ==========
+if not SESSION_STRING:
+    logger.error("❌ SESSION_STRING не задан!")
+    exit(1)
+
+# ==================== КЛИЕНТ ЧЕРЕЗ СТРОКУ СЕССИИ ====================
 app_bot = Client(
     name="session",
     api_id=API_ID,
     api_hash=API_HASH,
-    session_string=STRING_SESSION,
-    workdir=SESSION_DIR
+    session_string=SESSION_STRING  # <--- ВМЕСТО НОМЕРА
 )
 
+# ==================== FLASK ====================
 app_web = Flask(__name__)
 
 @app_web.route('/')
@@ -44,13 +47,19 @@ def run_flask():
     port = int(os.getenv("PORT", 8080))
     app_web.run(host='0.0.0.0', port=port)
 
+# ==================== ЗАПУСК БОТА ====================
 async def start_bot():
     try:
         async with app_bot:
             await app_bot.start()
-            logger.info("✅ Бот запущен!")
+            logger.info("✅ Бот успешно запущен!")
+            
             if MY_USER_ID:
-                await app_bot.send_message(MY_USER_ID, "🚀 Бот запущен на Render!")
+                try:
+                    await app_bot.send_message(MY_USER_ID, "🚀 Бот запущен на Render!")
+                except:
+                    pass
+            
             await asyncio.Event().wait()
     except Exception as e:
         logger.error(f"❌ Ошибка: {e}")
@@ -60,6 +69,6 @@ def run_bot():
     asyncio.run(start_bot())
 
 if __name__ == "__main__":
-    logger.info("🚀 Запуск...")
+    logger.info("🚀 Запуск сервера...")
     threading.Thread(target=run_flask, daemon=True).start()
     run_bot()
