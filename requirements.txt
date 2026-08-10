@@ -1,6 +1,6 @@
-Flask
-pyrogram
-tgcrypto
-requests
-psutil
-pyautogui
+Flask==2.3.2
+pyrogram==2.0.106
+tgcrypto==1.2.5
+requests==2.31.0
+psutil==5.9.5
+pyautogui==0.9.54
