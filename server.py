@@ -25,27 +25,54 @@ app_bot = Client(
     session_string=SESSION_STRING
 )
 
-# ==================== КОМАНДЫ БОТА ====================
+# ==================== КОМАНДЫ ====================
 
 @app_bot.on_message(filters.command("start") & filters.user(MY_USER_ID))
 async def start_command(client, message: Message):
-    await message.reply_text("✅ Бот работает! Команды:\n/status - проверить\n/ping - задержка")
+    await message.reply_text(
+        "✅ **Бот работает!**\n\n"
+        "Команды:\n"
+        "/status — профиль\n"
+        "/ping — задержка\n"
+        "/id — ID чата\n"
+        "/echo текст — повторить"
+    )
 
 @app_bot.on_message(filters.command("status") & filters.user(MY_USER_ID))
 async def status_command(client, message: Message):
     me = await client.get_me()
-    await message.reply_text(f"👤 {me.first_name}\n🆔 {me.id}\n📛 @{me.username or 'Нет'}")
+    await message.reply_text(
+        f"👤 **Профиль:** {me.first_name}\n"
+        f"🆔 **ID:** {me.id}\n"
+        f"📛 **Юзернейм:** @{me.username or 'Нет'}"
+    )
 
 @app_bot.on_message(filters.command("ping") & filters.user(MY_USER_ID))
 async def ping_command(client, message: Message):
-    start = time.time()
+    start_time = time.time()
     msg = await message.reply_text("🏓 Измеряю...")
-    end = time.time()
-    await msg.edit_text(f"🏓 Pong! {round((end - start) * 1000)} мс")
+    end_time = time.time()
+    await msg.edit_text(f"🏓 **Pong!** `{round((end_time - start_time) * 1000)}` мс")
 
 @app_bot.on_message(filters.command("id") & filters.user(MY_USER_ID))
 async def id_command(client, message: Message):
-    await message.reply_text(f"🆔 ID чата: {message.chat.id}\n👤 ID пользователя: {message.from_user.id}")
+    await message.reply_text(
+        f"🆔 **ID чата:** `{message.chat.id}`\n"
+        f"👤 **ID пользователя:** `{message.from_user.id}`"
+    )
+
+@app_bot.on_message(filters.command("echo") & filters.user(MY_USER_ID))
+async def echo_command(client, message: Message):
+    if len(message.text.split()) > 1:
+        text = message.text.split(maxsplit=1)[1]
+        await message.reply_text(f"🔊 {text}")
+    else:
+        await message.reply_text("❌ Напиши что-то после /echo")
+
+@app_bot.on_message(filters.user(MY_USER_ID))
+async def fallback(client, message: Message):
+    if not message.text.startswith("/"):
+        await message.reply_text(f"📩 Ты написал: {message.text}")
 
 # ==================== FLASK ====================
 app_web = Flask(__name__)
@@ -68,13 +95,14 @@ async def start_bot():
         logger.info("🔄 Подключение к Telegram...")
         await app_bot.start()
         logger.info("✅ Бот успешно запущен на Render!")
-        
+
         if MY_USER_ID:
             try:
                 await app_bot.send_message(MY_USER_ID, "🚀 Бот запущен!")
-            except:
-                pass
-        
+            except Exception as e:
+                logger.error(f"Не удалось отправить приветствие: {e}")
+
+        # Бесконечное ожидание
         await asyncio.Event().wait()
     except Exception as e:
         logger.error(f"❌ Ошибка: {e}")
@@ -84,6 +112,12 @@ def run_bot():
 
 if __name__ == "__main__":
     logger.info("🚀 Запуск сервера...")
-    threading.Thread(target=run_flask, daemon=True).start()
+
+    # Запускаем Flask
+    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+
     time.sleep(2)
+
+    # Запускаем бота
     run_bot()
