@@ -13,16 +13,13 @@ logger = logging.getLogger(__name__)
 # ==================== ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ ====================
 API_ID = int(os.getenv("API_ID", 0))
 API_HASH = os.getenv("API_HASH", "")
-SESSION_STRING = os.getenv("SESSION_STRING", "")  # <--- ГЛАВНОЕ
+SESSION_STRING = os.getenv("BAIVWl4Axm2K9id56nuMBu9wpovDnl_dW8TrmE6auNHoC2ONl2pEDtyht21nX0qL-4L1fC7dEVOhoeSpjgM1ZrB2dR6Ewi9vCNLLvRo_Rj07gEpVGupQVB7ttX_9GltXa3WxlWypU-xz-RvEQ_iWJjr8AXzpRRTyusEDRSb_8zhAwgCAbcluJ5LcSwJVIm_2WQZu4b5QIkR_zeAhGWdyFKlJn0fdzwPdascBuRXUtaPuaPm4Ot_WSWk-OZfvqhL_vexNBJfr6xef6G03tx2vijwHv_2EdThc0F36Ju8P8kJzYllWtlbH4MKu3Ftm36cYJ2ttAXF-Q-uCo_fho62iwMGEYpUm8gAAAAHSVcGwAA", "")  # <--- ГЛАВНОЕ
 MY_USER_ID = int(os.getenv("MY_USER_ID", 0))
 
 if not API_ID or not API_HASH:
     logger.error("❌ API_ID или API_HASH не заданы!")
     exit(1)
 
-if not SESSION_STRING:
-    logger.error("❌ SESSION_STRING не задан!")
-    exit(1)
 
 # ==================== КЛИЕНТ ЧЕРЕЗ СТРОКУ СЕССИИ ====================
 app_bot = Client(
