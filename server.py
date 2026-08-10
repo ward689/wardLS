@@ -6,49 +6,35 @@ import logging
 from flask import Flask, jsonify
 from pyrogram import Client
 
-# ==================== НАСТРОЙКА ЛОГОВ ====================
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ==================== СОЗДАЁМ ПАПКУ ДЛЯ СЕССИИ ====================
 SESSION_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "session")
 os.makedirs(SESSION_DIR, exist_ok=True)
-logger.info(f"📁 Папка для сессии: {SESSION_DIR}")
 
-# ==================== ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ ====================
 API_ID = int(os.getenv("API_ID", 0))
 API_HASH = os.getenv("API_HASH", "")
-SESSION_NAME = os.getenv("SESSION_NAME", "my_session")
+STRING_SESSION = os.getenv("STRING_SESSION", "")  # <--- ГЛАВНОЕ
 MY_USER_ID = int(os.getenv("MY_USER_ID", 0))
-PHONE_NUMBER = os.getenv("PHONE_NUMBER", "")  # <--- НОВАЯ ПЕРЕМЕННАЯ
 
-if not API_ID or not API_HASH:
-    logger.error("❌ API_ID или API_HASH не заданы в переменных окружения!")
+if not STRING_SESSION:
+    logger.error("❌ STRING_SESSION не задан!")
     exit(1)
 
-if not PHONE_NUMBER:
-    logger.error("❌ PHONE_NUMBER не задан в переменных окружения!")
-    exit(1)
-
-# ==================== КЛИЕНТ PYROGRAM ====================
+# ========== КЛИЕНТ ЧЕРЕЗ СТРОКУ СЕССИИ ==========
 app_bot = Client(
-    name=SESSION_NAME,
+    name="session",
     api_id=API_ID,
     api_hash=API_HASH,
-    workdir=SESSION_DIR,
-    phone_number=PHONE_NUMBER  # <--- ПЕРЕДАЁМ НОМЕР
+    session_string=STRING_SESSION,
+    workdir=SESSION_DIR
 )
 
-# ==================== FLASK ДЛЯ KEEP-ALIVE ====================
 app_web = Flask(__name__)
 
 @app_web.route('/')
 def home():
-    return jsonify({
-        "status": "Бот работает",
-        "time": time.time(),
-        "session_dir": SESSION_DIR
-    })
+    return jsonify({"status": "Бот работает", "time": time.time()})
 
 @app_web.route('/ping')
 def ping():
@@ -56,39 +42,24 @@ def ping():
 
 def run_flask():
     port = int(os.getenv("PORT", 8080))
-    logger.info(f"🌐 Запуск Flask на порту {port}")
     app_web.run(host='0.0.0.0', port=port)
 
-# ==================== ЗАПУСК БОТА ====================
 async def start_bot():
     try:
         async with app_bot:
             await app_bot.start()
-            logger.info("✅ Бот успешно запущен и готов к работе!")
-            
-            # Отправляем приветствие в личку
+            logger.info("✅ Бот запущен!")
             if MY_USER_ID:
-                try:
-                    await app_bot.send_message(MY_USER_ID, "🚀 Бот запущен на Render!")
-                except Exception as e:
-                    logger.warning(f"Не удалось отправить приветствие: {e}")
-            
-            # Бесконечное ожидание
+                await app_bot.send_message(MY_USER_ID, "🚀 Бот запущен на Render!")
             await asyncio.Event().wait()
     except Exception as e:
-        logger.error(f"❌ Ошибка при запуске бота: {e}")
+        logger.error(f"❌ Ошибка: {e}")
         raise
 
 def run_bot():
     asyncio.run(start_bot())
 
-# ==================== ТОЧКА ВХОДА ====================
 if __name__ == "__main__":
-    logger.info("🚀 Запуск сервера...")
-    
-    # Запускаем Flask в отдельном потоке
-    flask_thread = threading.Thread(target=run_flask, daemon=True)
-    flask_thread.start()
-    
-    # Запускаем бота (основной поток)
+    logger.info("🚀 Запуск...")
+    threading.Thread(target=run_flask, daemon=True).start()
     run_bot()
